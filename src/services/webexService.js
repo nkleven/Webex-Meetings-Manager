@@ -48,6 +48,42 @@ axiosRetry(wxAxios, {
 
 function webexService() {
 
+  function getMe(access_token) {
+    return new Promise((resolve, reject)=> {
+      const options = {
+        method: 'GET',
+        url: 'https://webexapis.com/v1/people/me',
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        json: true,
+      };
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          if(!response.data){
+            logger.debug(
+              'missing data in response.',
+            );
+            reject(new Error('invalid json data'));
+          }
+          try{
+            logger.debug('personal data received');
+            resolve(response.data.displayName);
+          }
+          catch{
+            logger.debug('unable to retrieve displayName');
+            reject(error);
+          }
+        })
+        .catch((error) =>{
+          reject(error);
+        });
+    });
+  }
+
   function postTokens2(code) {
   return new Promise((resolve, reject) => {
       const oAuthHeader = Buffer.from(`${params.clientId}:${params.clientSecret}`).toString('base64');
@@ -152,6 +188,7 @@ function webexService() {
     }
 
   return {
+    getMe,
     postTokens2,
     retrieveTokens
   };

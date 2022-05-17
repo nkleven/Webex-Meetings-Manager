@@ -5,9 +5,11 @@ const logger = require('../utils/logger')('meetingsController');
 
 function meetingsController() {
 
-    function getIndex(req, res){
+    async function getIndex(req, res){
+        const me = await webexService.getMe(req.session.access_token);
         res.render('meetings',{
             title: 'Meeting Manager',
+            me: me
           });
     }
 
