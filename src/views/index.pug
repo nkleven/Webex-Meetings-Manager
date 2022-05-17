@@ -1,0 +1,9 @@
+extends layout
+
+block extra-head
+
+block layout-content
+    h1 #{title}
+    unless authenticated
+        a.link(href=`${authUri}`)
+            button#loginButton.RowButton(style='float:left;') Login to Webex
