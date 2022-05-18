@@ -1,3 +1,4 @@
+const bodyParser = require('body-parser');
 const express = require('express');
 const chalk = require('chalk');
 const debug = require('debug')('app');
@@ -12,6 +13,10 @@ const params = require('./src/utils/params');
 
 const PORT = process.env.PORT || 3000;
 const app = express();
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
 app.use(morgan('tiny'));
 
 app.use(express.static(path.join(__dirname, '/public/')));

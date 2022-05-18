@@ -7,14 +7,22 @@ function meetingsController() {
 
     async function getIndex(req, res){
         const me = await webexService.getMe(req.session.access_token);
-        res.render('meetings',{
-            title: 'Meeting Manager',
-            me: me
-          });
+        if (!req.session.meetings){
+            res.render('meetings',{
+                title: 'Meeting Manager',
+                me: me
+            });
+        }
+
+    }
+
+    async function postIndex(req, res){
+        logger.debug(req.body);
     }
 
     return {
-        getIndex
+        getIndex,
+        postIndex
     };
 
 }

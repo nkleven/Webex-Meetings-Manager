@@ -5,3 +5,7 @@ block extra-head
 block layout-content
     h1 #{title}
     h2 Hello #{me}
+    br
+    form(action=`/meetings` method='POST' autocomplete='off')
+      input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px', title='Meeting Host')
+      button.InputButton(type='Submit', style='margin:8px;') Get Meetings

@@ -84,12 +84,12 @@ function webexService() {
     });
   }
 
-  function getPayload(apiName, params){
+  function getPayload(apiName, params, access_token){
 
     return new Promise((resolve, reject)=>{
       const options = {
         method: 'GET',
-        url: `https://webexapis.com/v1/${apiName}`,
+        url: `https://webexapis.com/v1/${apiName}/`,
         headers: {
           authorization: `Bearer ${access_token}`,
           'Content-Type': 'application/json',
@@ -211,6 +211,7 @@ function webexService() {
 
   return {
     getMe,
+    getPayload,
     postTokens2,
     retrieveTokens
   };

@@ -6,9 +6,10 @@ const meetingsRoutes = express.Router();
 function router(){
     const {
         getIndex,
+        postIndex
     } = meetingsController();
 
-    meetingsRoutes.route('/').get(getIndex)
+    meetingsRoutes.route('/').get(getIndex).post(postIndex);
 
     return meetingsRoutes;
 }
