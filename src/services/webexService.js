@@ -84,6 +84,28 @@ function webexService() {
     });
   }
 
+  function getPayload(apiName, params){
+
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'GET',
+        url: `https://webexapis.com/v1/${apiName}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        params: params,
+        json: true
+      };
+        
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          data = response.data
+        })
+      });
+  }
+
   function postTokens2(code) {
   return new Promise((resolve, reject) => {
       const oAuthHeader = Buffer.from(`${params.clientId}:${params.clientSecret}`).toString('base64');
