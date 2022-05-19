@@ -18,6 +18,10 @@ function meetingsController() {
 
     async function postIndex(req, res){
         logger.debug(req.body);
+
+        if(req.body.meetingHost){
+            const meetings = await webexService.listMeetings(req.body.meetingHost, req.session.access_token);
+        }
     }
 
     return {
