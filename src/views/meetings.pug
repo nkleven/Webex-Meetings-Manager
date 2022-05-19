@@ -3,9 +3,21 @@ extends layout
 block extra-head
 
 block layout-content
+  div.UserView
     h1 #{title}
     h2 Hello #{me}
-    br
     form(action=`/meetings` method='POST' autocomplete='off')
-      input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px', title='Meeting Host')
+      input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px', title='Meeting Host', placeholder='Enter Host Email Address')
       button.InputButton(type='Submit', style='margin:8px;') Get Meetings
+    div.config
+      if meetings
+        table#results.ResultsInfo
+          thead
+            tr
+              th(style='width:200px;') Date
+              th(style='width:600px;') Meeting Title
+          tbody
+            for item in meetings.items
+              tr
+                td #{item.start}
+                td #{item.title}
