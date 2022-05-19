@@ -224,7 +224,8 @@ function webexService() {
       wxAxios
       .request(options)
       .then((response)=>{
-        data = response.data
+        resolve(response.data);
+        //TODO ADD EXCEPTION HANDLING
       })
     });
   }

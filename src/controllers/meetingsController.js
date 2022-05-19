@@ -21,6 +21,7 @@ function meetingsController() {
 
         if(req.body.meetingHost){
             const meetings = await webexService.listMeetings(req.body.meetingHost, req.session.access_token);
+            logger.debug('fetched meetings');
         }
     }
 
