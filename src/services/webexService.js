@@ -207,11 +207,32 @@ function webexService() {
             reject(error);
         });
     });
-    }
+  }
+
+  function listMeetings(hostEmail, access_token){
+    return new Promise((resolve, reject) => {
+      const options = {
+      method: 'GET',
+      url: `https://webexapis.com/v1/meetings?hostEmail=${hostEmail}`,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${access_token}`
+      },
+      json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        data = response.data
+      })
+    });
+  }
 
   return {
     getMe,
     getPayload,
+    listMeetings,
     postTokens2,
     retrieveTokens
   };
