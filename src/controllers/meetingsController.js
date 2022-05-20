@@ -22,10 +22,11 @@ function meetingsController() {
         // Does request contain a meeting id query
         if(req.query.id){
             logger.debug('meeting selected');
-            req.session.meeting = await webexService.getMeeting(req.query.id, req.session.access_token);
+            meetingPassword = req.session.meetings.items[req.query.index].password
+            req.session.meeting = await webexService.getMeeting(req.query.id, meetingPassword, req.session.access_token);
             res.render('meetings',{
                 title: 'Meeting Manager',
-                me: request.session.me,
+                me: req.session.me,
                 meetings: req.session.meetings,
                 meeting: req.session.meeting
             });

@@ -84,14 +84,15 @@ function webexService() {
     });
   }
 
-  function getMeeting(meetingId, access_token){
+  function getMeeting(meetingId, meetingPassword, access_token){
     return new Promise((resolve, reject) => {
       const options = {
       method: 'GET',
       url: `https://webexapis.com/v1/meetings/${meetingId}`,
       headers: {
         'Content-Type': 'application/json',
-        authorization: `Bearer ${access_token}`
+        authorization: `Bearer ${access_token}`,
+        password: meetingPassword
       },
       json: true,
       };

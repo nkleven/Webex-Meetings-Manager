@@ -18,11 +18,13 @@ block layout-content
               th(style='width:500px;') Meeting Title
               th(style='width:200px;') Meeting Number
           tbody
+            - var x = 0
             for item in meetings.items
               tr
                 td #{item.start}
                 td 
-                  a.link(href=`/meetings?id=${item.id}`) #{item.title}
+                  a.link(href=`/meetings?id=${item.id}&index=${x}`) #{item.title}
+                  - x++
                 td #{item.meetingNumber}
     else if meetings
       .Config
