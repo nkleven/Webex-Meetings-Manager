@@ -446,13 +446,13 @@ input:checked + .slider:before {
   
 }
 .ResultsInfo tr:nth-child(even){background-color: #f2f2f2;}
-.ResultsInfo tr:hover {background-color: #ddd;}
+.ResultsInfo tr:hover {background-color: #5d5a5a;}
 .ResultsInfo th {
   padding-top: 8px;
   padding-bottom: 8px;
   text-align: left;
-  /*background-color: #2196F3;
-  color: white;*/
+  background-color: #2196F3;
+  color: white;
 }
 
 .Table {

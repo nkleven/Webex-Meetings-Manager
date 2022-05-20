@@ -84,6 +84,27 @@ function webexService() {
     });
   }
 
+  function getMeeting(meetingId, access_token){
+    return new Promise((resolve, reject) => {
+      const options = {
+      method: 'GET',
+      url: `https://webexapis.com/v1/meetings/${meetingId}`,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${access_token}`
+      },
+      json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+        //TODO ADD EXCEPTION HANDLING
+      })
+    });
+  }
+
   function getPayload(apiName, params, access_token){
 
     return new Promise((resolve, reject)=>{
@@ -232,6 +253,7 @@ function webexService() {
 
   return {
     getMe,
+    getMeeting,
     getPayload,
     listMeetings,
     postTokens2,

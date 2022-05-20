@@ -2,27 +2,42 @@ const functions = require('../utils/functions');
 const params = require('../utils/params');
 const webexService = require('../services/webexService');
 const { append } = require('express/lib/response');
+const { request } = require('express');
 const logger = require('../utils/logger')('meetingsController');
 
 function meetingsController() {
 
     async function getIndex(req, res){
-        const me = await webexService.getMe(req.session.access_token);
-        req.session.me = me;
+        // Get display name of logged in user
+        req.session.me = await webexService.getMe(req.session.access_token);
+        
+        // Look for retrieved list of meetings for user
         if (!req.session.meetings){
             res.render('meetings',{
                 title: 'Meeting Manager',
-                me: me
+                me: req.session.me,
             });
         }
 
+        // Does request contain a meeting id query
+        if(req.query.id){
+            logger.debug('meeting selected');
+            req.session.meeting = await webexService.getMeeting(req.query.id, req.session.access_token);
+            res.render('meetings',{
+                title: 'Meeting Manager',
+                me: request.session.me,
+                meetings: req.session.meetings,
+                meeting: req.session.meeting
+            });
+        }
     }
 
+    //  
     async function postIndex(req, res){
         logger.debug(req.body);
 
         if(req.body.meetingHost){
-            const meetings = await webexService.listMeetings(req.body.meetingHost, req.session.access_token);
+            req.session.meetings = meetings = await webexService.listMeetings(req.body.meetingHost, req.session.access_token);
             logger.debug('fetched meetings');
             res.render('meetings',{
                 title: 'Meeting Manager',
