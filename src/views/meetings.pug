@@ -37,6 +37,9 @@ block layout-content
           div
             table.DetailsInfo
               tr
+                th Meeting Name
+                td #{meeting.title}
+              tr
                 th(rowspan= meeting.participants.items.length + 1)(style='width: 150px;') Participants
                 - var x = 0
                 for item in meeting.participants.items
