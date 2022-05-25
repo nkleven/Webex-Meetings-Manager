@@ -455,6 +455,27 @@ input:checked + .slider:before {
   color: white;
 }
 
+
+.DetailsInfo {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+.DetailsInfo td, .DetailsInfo th {
+  border: 1px solid #ddd;
+  padding: 4px;
+  
+}
+.DetailsInfo tr:nth-child(even){background-color: #f2f2f2;}
+/* .DetailsInfo tr:hover {background-color: #5d5a5a;} */
+.DetailsInfo th {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  text-align: left;
+  background-color: white;
+  color: black;
+}
+
 .Table {
   font-family: Arial, Helvetica, sans-serif;
   border-collapse: collapse;

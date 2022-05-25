@@ -23,9 +23,30 @@ block layout-content
               tr
                 td #{item.start}
                 td 
-                  a.link(href=`/meetings?id=${item.id}&index=${x}`) #{item.title}
+                  a.link(href=`/meetings?getMeeting&id=${item.id}&index=${x}`) #{item.title}
                   - x++
                 td #{item.meetingNumber}
     else if meetings
       .Config
         h2 No meetings found for host
+    if meeting
+      .tabs
+        input.input(name='tabs', type='radio', id='tab-1', checked)
+        label.label(for='tab-1') Meeting Details
+        .panel
+          div
+            table.DetailsInfo
+              tr
+                th(rowspan= meeting.participants.items.length + 1)(style='width: 150px;') Participants
+                - var x = 0
+                for item in meeting.participants.items
+                  tr
+                    td
+                      | #{item.displayName}
+                      if item.coHost
+                        i(class='fa fa-check icon-yes', title='Cohost')
+                      else
+                        a.Link(href=`/meetings/?id=${meeting.id}&elevateHost=true&index=${x}`)
+                          button#elevateHost.RowButton(style='float:right;') Make Co-Host
+                      - x++
+                    

@@ -71,7 +71,7 @@ function webexService() {
           }
           try{
             logger.debug('personal data received');
-            resolve(response.data.displayName);
+            resolve(response.data);
           }
           catch{
             logger.debug('unable to retrieve displayName');
@@ -123,9 +123,36 @@ function webexService() {
       wxAxios
         .request(options)
         .then((response)=>{
-          data = response.data
+          resolve(response.data)
         })
       });
+  }
+
+  function listParticipants(meetingId, hostEmail, access_token){
+
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'GET',
+        url: `https://webexapis.com/v1/meetingInvitees`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        params: {
+          meetingId: meetingId,
+          hostEmail: hostEmail
+        },
+        json: true
+      }
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          resolve(response.data)
+        })
+
+    });
+    
   }
 
   function postTokens2(code) {
@@ -252,13 +279,43 @@ function webexService() {
     });
   }
 
+  function updateCoHost(meetingInviteId, email, hostEmail, access_token){
+    return new Promise((resolve, reject) => {
+      const options = {
+      method: 'PUT',
+      url: `https://webexapis.com/v1/meetingInvitees/${meetingInviteId}`,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${access_token}`
+      },
+      data: {
+        email: email,
+        coHost: true,
+        hostEmail: hostEmail,
+        sendEmail: false
+      }
+      ,
+      json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+        //TODO ADD EXCEPTION HANDLING
+      })
+    });
+  }
+
   return {
     getMe,
     getMeeting,
     getPayload,
     listMeetings,
+    listParticipants,
     postTokens2,
-    retrieveTokens
+    retrieveTokens,
+    updateCoHost
   };
 }
 
