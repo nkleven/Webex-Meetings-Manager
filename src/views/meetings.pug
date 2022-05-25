@@ -40,6 +40,9 @@ block layout-content
                 th Meeting Name
                 td #{meeting.title}
               tr
+                th Meeting Host
+                td #{meeting.hostDisplayName}
+              tr
                 th(rowspan= meeting.participants.items.length + 1)(style='width: 150px;') Participants
                 - var x = 0
                 for item in meeting.participants.items
