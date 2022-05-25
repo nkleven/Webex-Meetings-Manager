@@ -45,6 +45,8 @@ block layout-content
                       | #{item.displayName}
                       if item.coHost
                         i(class='fa fa-check icon-yes', title='Cohost')
+                        a.Link(href=`/meetings/?id=${meeting.id}&removeHost=true&index=${x}`)
+                          button#removeHost.RowButton(style='float:right;') Remove Co-Host
                       else
                         a.Link(href=`/meetings/?id=${meeting.id}&elevateHost=true&index=${x}`)
                           button#elevateHost.RowButton(style='float:right;') Make Co-Host

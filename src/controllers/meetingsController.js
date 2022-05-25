@@ -19,10 +19,10 @@ function meetingsController() {
             });
         }
 
-        if(req.query.elevateHost){
+        if(req.query.elevateHost || req.query.removeHost){
             logger.debug('request to add a cohost')
-            const newCoHost = req.session.meeting.participants.items[req.query.index];
-            response = await webexService.updateCoHost(newCoHost.id, newCoHost.email, req.session.meeting.hostEmail ,req.session.access_token);
+            const coHost = req.session.meeting.participants.items[req.query.index];
+            response = await webexService.updateCoHost(coHost, req.session.meeting.hostEmail ,req.session.access_token);
             req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
             logger.debug('new host added');
             res.render('meetings',{

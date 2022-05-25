@@ -279,18 +279,21 @@ function webexService() {
     });
   }
 
-  function updateCoHost(meetingInviteId, email, hostEmail, access_token){
+  function updateCoHost(coHost, hostEmail, access_token){
+    let newStatus = true;
+    if(coHost.coHost == true){newStatus = false};
+    if(coHost.coHost == false){newStatus = true};
     return new Promise((resolve, reject) => {
       const options = {
       method: 'PUT',
-      url: `https://webexapis.com/v1/meetingInvitees/${meetingInviteId}`,
+      url: `https://webexapis.com/v1/meetingInvitees/${coHost.id}`,
       headers: {
         'Content-Type': 'application/json',
         authorization: `Bearer ${access_token}`
       },
       data: {
-        email: email,
-        coHost: true,
+        email: coHost.email,
+        coHost: newStatus,
         hostEmail: hostEmail,
         sendEmail: false
       }
