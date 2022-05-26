@@ -6,55 +6,71 @@ block layout-content
   .UserView
     h1 #{title}
     h2 Hello #{me}
-    form(action=`/meetings` method='POST' autocomplete='off')
-      input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px', title='Meeting Host', placeholder='Enter Host Email Address')
-      button.InputButton(type='Submit', style='margin:8px;') Get Meetings
-    if meetings && meetings.items.length > 0
-      .Config
-        table#results.ResultsInfo
-          thead
-            tr
-              th(style='width:150px;') Date
-              th(style='width:500px;') Meeting Title
-              th(style='width:200px;') Meeting Number
-          tbody
-            - var x = 0
-            for item in meetings.items
-              tr
-                td #{item.start}
-                td 
-                  a.link(href=`/meetings?getMeeting&id=${item.id}&index=${x}`) #{item.title}
-                  - x++
-                td #{item.meetingNumber}
-    else if meetings
-      .Config
-        h2 No meetings found for host
-    if meeting
-      .tabs
-        input.input(name='tabs', type='radio', id='tab-1', checked)
-        label.label(for='tab-1') Meeting Details
-        .panel
-          div
-            table.DetailsInfo
-              tr
-                th Meeting Name
-                td #{meeting.title}
-              tr
-                th Meeting Host
-                td #{meeting.hostDisplayName}
-              tr
-                th(rowspan= meeting.participants.items.length + 1)(style='width: 150px;') Participants
+    .tabs-nomax
+      input.input(name='main-tabs', type='radio', id='main-tab-1', checked)
+      label.label(for='main-tab-1') Meetings
+      .panel
+        form(action=`/meetings` method='POST' autocomplete='off')
+          input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px', title='Meeting Host', placeholder='Enter Host Email Address')
+          button.InputButton(type='Submit', style='margin:8px;') Get Meetings
+        if meetings && meetings.items.length > 0
+          .Config
+            table#results.ResultsInfo
+              thead
+                tr
+                  th(style='width:150px;') Date
+                  th(style='width:500px;') Meeting Title
+                  th(style='width:200px;') Meeting Number
+              tbody
                 - var x = 0
-                for item in meeting.participants.items
+                for item in meetings.items
                   tr
-                    td
-                      | #{item.displayName}
-                      if item.coHost
-                        i(class='fa fa-check icon-yes', title='Cohost')
-                        a.Link(href=`/meetings/?id=${meeting.id}&removeHost=true&index=${x}`)
-                          button#removeHost.RowButton(style='float:right;') Remove Co-Host
-                      else
-                        a.Link(href=`/meetings/?id=${meeting.id}&elevateHost=true&index=${x}`)
-                          button#elevateHost.RowButton(style='float:right;') Make Co-Host
+                    td #{item.start}
+                    td 
+                      a.link(href=`/meetings?getMeeting&id=${item.id}&index=${x}`) #{item.title}
                       - x++
-                    
+                    td #{item.meetingNumber}
+        else if meetings
+          .Config
+            h2 No meetings found for host
+        if meeting
+          .tabs
+            input.input(name='meetings-tabs', type='radio', id='meeting-tab-1', checked)
+            label.label(for='meeting-tab-1') Meeting Details
+            .panel
+              div
+                table.DetailsInfo
+                  tr
+                    th Meeting Name
+                    td #{meeting.title}
+                  tr
+                    th Meeting Host
+                    td #{meeting.hostDisplayName}
+                  tr
+                    th(rowspan= meeting.participants.items.length + 1)(style='width: 150px;') Participants
+                    - var x = 0
+                    for item in meeting.participants.items
+                      tr
+                        td
+                          | #{item.displayName}
+                          if item.coHost
+                            i(class='fa fa-check icon-yes', title='Cohost')
+                            a.Link(href=`/meetings/?id=${meeting.id}&removeHost=true&index=${x}`)
+                              button#removeHost.RowButton(style='float:right;') Remove Co-Host
+                          else
+                            a.Link(href=`/meetings/?id=${meeting.id}&elevateHost=true&index=${x}`)
+                              button#elevateHost.RowButton(style='float:right;') Make Co-Host
+                          - x++
+      input.input(name='main-tabs', type='radio', id='main-tab-2')
+      label.label(for='main-tab-2') Spaces
+        .panel
+          .tabs-nomax
+            table.ResultsInfo
+              tr
+                th(style='width:150px;') Kicking Ass
+                th(style='width:500px;') TBD
+                th(style='width:200px;') Third thing here
+              tr
+                td test 1
+                td test 2
+                td test 2  
