@@ -11,8 +11,8 @@ block layout-content
       label.label(for='main-tab-1') Meetings
       .panel
         form(action=`/meetings` method='POST' autocomplete='off')
-          input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px', title='Meeting Host', placeholder='Enter Host Email Address')
-          button.InputButton(type='Submit', style='margin:8px;') Get Meetings
+          input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px; float:left;', title='Meeting Host', placeholder='Enter Host Email Address')
+          button.InputButton(type='Submit', style='margin:8px; float:left;') Get Meetings
         if meetings && meetings.items.length > 0
           .Config
             table#results.ResultsInfo
@@ -64,12 +64,12 @@ block layout-content
       input.input(name='main-tabs', type='radio', id='main-tab-2')
       label.label(for='main-tab-2') Spaces
       .panel
-        table.ResultsInfo
-          tr
-            th(style='width:150px;') Kicking Ass
-            th(style='width:500px;') TBD
-            th(style='width:200px;') Third thing here
-          tr
-            td test 1
-            td test 2
-            td test 2  
+        form(action=`/meetings` method='POST' autocomplete='off')
+          input#spaceUser.InputBox(name='spaceUser', style='width: 450px; margin: 8px; float:left;', title='Space User', placeholder='Enter User Email Address')
+          button.InputButton(type='Submit', style='margin:8px; float:left;') Get Spaces
+        br
+        br
+        br
+        form(action=`/meetings` method='POST' autocomplete='off')
+          input#spaceUser.InputBox(name='spaceName', style='width: 450px; margin: 8px; float:left;', title='Space Name', placeholder='Enter Space Name to Search')
+          button.InputButton(type='Submit', style='margin:8px; float:left;') Search Spaces
