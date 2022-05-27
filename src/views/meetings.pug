@@ -26,23 +26,22 @@ block layout-content
                 for item in meetings.items
                   tr
                     td #{item.start}
-                    td 
-                      a.link(href=`/meetings?getMeeting&id=${item.id}&index=${x}`) #{item.title}
+                    td
+                      a.link(href=`/meetings?getMeeting=true&id=${item.id}&index=${x}`) #{item.title}
                       - x++
                     td #{item.meetingNumber}
         else if meetings
           .Config
             h2 No meetings found for host
         if meeting
+          div
+          h2 #{meeting.title}
           .tabs
-            input.input(name='meetings-tabs', type='radio', id='meeting-tab-1', checked)
-            label.label(for='meeting-tab-1') Meeting Details
+            input.input(name='meeting-tabs', type='radio', id='meeting-tab-1', checked)
+            label.label(for='meeting-tab-1') Participants
             .panel
               div
                 table.DetailsInfo
-                  tr
-                    th Meeting Name
-                    td #{meeting.title}
                   tr
                     th Meeting Host
                     td #{meeting.hostDisplayName}
@@ -55,12 +54,42 @@ block layout-content
                           | #{item.displayName}
                           if item.coHost
                             i(class='fa fa-check icon-yes', title='Cohost')
-                            a.Link(href=`/meetings/?id=${meeting.id}&removeHost=true&index=${x}`)
+                            a.Link(href=`/meetings/?updateHost=true&index=${x}`)
                               button#removeHost.RowButton(style='float:right;') Remove Co-Host
                           else
-                            a.Link(href=`/meetings/?id=${meeting.id}&elevateHost=true&index=${x}`)
+                            a.Link(href=`/meetings/?updateHost=true&index=${x}`)
                               button#elevateHost.RowButton(style='float:right;') Make Co-Host
                           - x++
+            input.input(name="meeting-tabs", type='radio', id='meeting-tab-2')
+            label.label(for='meeting-tab-2') Join Options
+            .panel
+              div
+                table.DetailsInfo
+                  tr
+                    th(style='width: 350px;') Any User Can Be Co-Host
+                    if meeting.allowAnyUserToBeCoHost
+                      td
+                        a.link(href=`/meetings/?toggleMeetingOption=true&option=allowAnyUserToBeCoHost`)
+                          i(class='fa fa-toggle-on icon-yes', title='enabled')
+                    if !meeting.allowAnyUserToBeCoHost
+                      td
+                        a.link(href=`/meetings/?toggleMeetingOption=true&option=allowAnyUserToBeCoHost`)
+                          i(class='fa fa-toggle-off icon-yes', title='disabled')
+                  tr
+                    th Authenticated Devices
+                    td #{meeting.allowAuthenticatedDevices}
+                  tr
+                    th First User Be Co-Host
+                    td #{meeting.allowFirstUserToBeCoHost}
+                  tr
+                    th Automatic Lock
+                    td #{meeting.enableAutomaticLock}
+                  tr
+                    th Connect Audio Before Host
+                    td #{meeting.enableConnectAudioBeforeHost}
+                  tr
+                    th Join Before Host
+                    td #{meeting.enableJoinBeforeHost}
       input.input(name='main-tabs', type='radio', id='main-tab-2')
       label.label(for='main-tab-2') Spaces
       .panel

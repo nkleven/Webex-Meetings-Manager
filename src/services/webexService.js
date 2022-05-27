@@ -279,6 +279,31 @@ function webexService() {
     });
   }
 
+  function toggleMeetingOption(meeting, option, access_token){
+    if(meeting[option]){meeting[option] = false} else {meeting[option] = true}
+    delete meeting.start
+    delete meeting.end
+    return new Promise((resolve, reject) => {
+      const options = {
+      method: 'PUT',
+      url: `https://webexapis.com/v1/meetings/${meeting.id}`,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${access_token}`
+      },
+      data: meeting,
+      json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+        //TODO ADD EXCEPTION HANDLING
+      })
+    });
+  }
+
   function updateCoHost(coHost, hostEmail, access_token){
     let newStatus = true;
     if(coHost.coHost == true){newStatus = false};
@@ -318,6 +343,7 @@ function webexService() {
     listParticipants,
     postTokens2,
     retrieveTokens,
+    toggleMeetingOption,
     updateCoHost
   };
 }

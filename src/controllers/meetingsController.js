@@ -19,7 +19,7 @@ function meetingsController() {
             });
         }
 
-        if(req.query.elevateHost || req.query.removeHost){
+        if(req.query.updateHost){
             logger.debug('request to add a cohost')
             const coHost = req.session.meeting.participants.items[req.query.index];
             response = await webexService.updateCoHost(coHost, req.session.meeting.hostEmail ,req.session.access_token);
@@ -34,11 +34,24 @@ function meetingsController() {
         }
 
         // Does request contain a meeting id query
-        if(req.query.getMeeting == ''){
+        if(req.query.getMeeting){
             logger.debug('meeting selected');
             meetingPassword = req.session.meetings.items[req.query.index].password
             req.session.meeting = await webexService.getMeeting(req.query.id, meetingPassword, req.session.access_token);
             req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            res.render('meetings',{
+                title: params.appName,
+                me: req.session.me.displayName,
+                meetings: req.session.meetings,
+                meeting: req.session.meeting
+            });
+        }
+
+        if(req.query.toggleMeetingOption){
+            logger.debug('request to toggle a meeting option')
+            response = await webexService.toggleMeetingOption(req.session.meeting, req.query.option, req.session.access_token);
+            req.session.meeting = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            logger.debug('new host added');
             res.render('meetings',{
                 title: params.appName,
                 me: req.session.me.displayName,
@@ -52,6 +65,7 @@ function meetingsController() {
     async function postIndex(req, res){
         logger.debug(req.body);
 
+        // Look for a meeting host in the body of the post and retrieve meetings for that host.
         if(req.body.meetingHost){
             req.session.meetings = meetings = await webexService.listMeetings(req.body.meetingHost, req.session.access_token);
             logger.debug('fetched meetings');
