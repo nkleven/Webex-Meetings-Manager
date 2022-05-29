@@ -39,6 +39,7 @@ function meetingsController() {
             meetingPassword = req.session.meetings.items[req.query.index].password
             req.session.meeting = await webexService.getMeeting(req.query.id, meetingPassword, req.session.access_token);
             req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            req.session.meeting.password = meetingPassword;
             res.render('meetings',{
                 title: params.appName,
                 me: req.session.me.displayName,
@@ -49,9 +50,11 @@ function meetingsController() {
 
         if(req.query.toggleMeetingOption){
             logger.debug('request to toggle a meeting option')
-            response = await webexService.toggleMeetingOption(req.session.meeting, req.query.option, req.session.access_token);
-            req.session.meeting = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
-            logger.debug('new host added');
+            nextOccurrence = await webexService.getNextOccurrence(req.session.meeting.id, req.session.meeting.password, req.session.access_token)
+            await webexService.toggleMeetingOption(req.session.meeting, nextOccurrence, req.query.option, req.session.access_token);
+            req.session.meeting = await webexService.getMeeting(req.session.meeting.id, meetingPassword, req.session.access_token);
+            req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            logger.debug('Option Toggled');
             res.render('meetings',{
                 title: params.appName,
                 me: req.session.me.displayName,

@@ -48,6 +48,31 @@ axiosRetry(wxAxios, {
 
 function webexService() {
 
+  function getNextOccurrence(meetingSeriesId, password, access_token) {
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'GET', 
+        url: `https://webexapis.com/v1/meetings?meetingSeriesId=${meetingSeriesId}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+          'password': password
+        },
+        json: true,
+      };
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          const nextOccurrence = {
+            start: response.data.items[0].start,
+            end: response.data.items[0].end
+          }
+          resolve(nextOccurrence);
+        });
+    });
+  }
+
   function getMe(access_token) {
     return new Promise((resolve, reject)=> {
       const options = {
@@ -279,10 +304,10 @@ function webexService() {
     });
   }
 
-  function toggleMeetingOption(meeting, option, access_token){
+  function toggleMeetingOption(meeting, nextOccurrence, option, access_token){
     if(meeting[option]){meeting[option] = false} else {meeting[option] = true}
-    delete meeting.start
-    delete meeting.end
+    meeting.start = nextOccurrence.start;
+    meeting.end = nextOccurrence.end;
     return new Promise((resolve, reject) => {
       const options = {
       method: 'PUT',
@@ -338,6 +363,7 @@ function webexService() {
   return {
     getMe,
     getMeeting,
+    getNextOccurrence,
     getPayload,
     listMeetings,
     listParticipants,
