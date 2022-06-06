@@ -44,7 +44,8 @@ function meetingsController() {
                 title: params.appName,
                 me: req.session.me.displayName,
                 meetings: req.session.meetings,
-                meeting: req.session.meeting
+                meeting: req.session.meeting,
+                tab: 1,
             });
         }
 
@@ -59,7 +60,8 @@ function meetingsController() {
                 title: params.appName,
                 me: req.session.me.displayName,
                 meetings: req.session.meetings,
-                meeting: req.session.meeting
+                meeting: req.session.meeting,
+                tab: 2,
             });
         }
     }

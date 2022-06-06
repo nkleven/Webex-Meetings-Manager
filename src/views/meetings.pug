@@ -37,7 +37,10 @@ block layout-content
           div
           h2 #{meeting.title}
           .tabs
-            input.input(name='meeting-tabs', type='radio', id='meeting-tab-1', checked)
+            if tab == 1
+              input.input(name='meeting-tabs', type='radio', id='meeting-tab-1', checked)
+            else
+              input.input(name='meeting-tabs', type='radio', id='meeting-tab-1')
             label.label(for='meeting-tab-1') Participants
             .panel
               div
@@ -60,7 +63,10 @@ block layout-content
                             a.Link(href=`/meetings/?updateHost=true&index=${x}`)
                               button#elevateHost.RowButton(style='float:right;') Make Co-Host
                           - x++
-            input.input(name="meeting-tabs", type='radio', id='meeting-tab-2')
+            if tab == 2
+              input.input(name="meeting-tabs", type='radio', id='meeting-tab-2', checked)
+            else
+              input.input(name='meeting-tabs', type='radio', id='meeting-tab-2')
             label.label(for='meeting-tab-2') Join Options
             .panel
               div
@@ -70,11 +76,11 @@ block layout-content
                     if meeting.allowAnyUserToBeCoHost
                       td
                         a.link(href=`/meetings/?toggleMeetingOption=true&option=allowAnyUserToBeCoHost`)
-                          i(class='fa fa-toggle-on icon-yes', title='enabled')
+                          i(class='fa fa-toggle-on icon-yes fa-2x', title='enabled')
                     if !meeting.allowAnyUserToBeCoHost
                       td
                         a.link(href=`/meetings/?toggleMeetingOption=true&option=allowAnyUserToBeCoHost`)
-                          i(class='fa fa-toggle-off icon-yes', title='disabled')
+                          i(class='fa fa-toggle-off icon-yes fa-2x', title='disabled')
                   tr
                     th Authenticated Devices
                     td #{meeting.allowAuthenticatedDevices}
