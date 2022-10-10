@@ -5,7 +5,7 @@ block extra-head
 block layout-content
   .UserView
     h1 #{title}
-    h2 Hello #{me}
+    h2 Hello #{me.displayName} (#{me.emailAddress})
     .tabs-nomax
       input.input(name='main-tabs', type='radio', id='main-tab-1', checked)
       label.label(for='main-tab-1') Meetings
@@ -63,6 +63,14 @@ block layout-content
                             a.Link(href=`/meetings/?updateHost=true&index=${x}`)
                               button#elevateHost.RowButton(style='float:right;') Make Co-Host
                           - x++
+                  tr
+                    td(colspan = 2)
+                      form(action=`/meetings` method='POST' autocomplete='off')
+                        input#newParticipant.InputBox(name='newParticipant', style='width: 450px; margin: 8px; float:left;', title='New Participant', placeholder='Enter Participant Email Address')
+                        button#addParticipant.RowButton(style='float:right;') Add Participant
+                  if error
+                    tr
+                      td(colspan = 2) #{error}
             if tab == 2
               input.input(name="meeting-tabs", type='radio', id='meeting-tab-2', checked)
             else

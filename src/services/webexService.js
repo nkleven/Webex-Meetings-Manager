@@ -1,5 +1,6 @@
 const axios = require('axios');
 const axiosRetry = require('axios-retry');
+const functions = require('../utils/functions');
 const rateLimit = require('axios-rate-limit');
 const qs = require('qs');
 const params = require('../utils/params');
@@ -48,28 +49,29 @@ axiosRetry(wxAxios, {
 
 function webexService() {
 
-  function getNextOccurrence(meetingSeriesId, password, access_token) {
+  function addParticipant(meetingId, emailAddress, hostEmail, access_token) {
     return new Promise((resolve, reject)=>{
       const options = {
-        method: 'GET', 
-        url: `https://webexapis.com/v1/meetings?meetingSeriesId=${meetingSeriesId}`,
+        method: 'POST',
+        url: 'https://webexapis.com/v1/meetingInvitees',
         headers: {
           authorization: `Bearer ${access_token}`,
-          'Content-Type': 'application/json',
-          'password': password
+          'Content-Type': 'application/json'
+        },
+        data : {
+          meetingId: meetingId,
+          email: emailAddress,
+          sendEmail: false,
+          hostEmail: hostEmail
         },
         json: true,
       };
 
       wxAxios
-        .request(options)
-        .then((response)=>{
-          const nextOccurrence = {
-            start: response.data.items[0].start,
-            end: response.data.items[0].end
-          }
-          resolve(nextOccurrence);
-        });
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+      });
     });
   }
 
@@ -96,7 +98,14 @@ function webexService() {
           }
           try{
             logger.debug('personal data received');
-            resolve(response.data);
+            const me = {};
+            if (response.data.roles){
+                me.displayName = response.data.displayName;
+                me.emailAddress = response.data.emails[0];
+                me.roles = functions.parseRoles(response.data.roles);
+            }
+
+            resolve(me);
           }
           catch{
             logger.debug('unable to retrieve displayName');
@@ -128,6 +137,31 @@ function webexService() {
         resolve(response.data);
         //TODO ADD EXCEPTION HANDLING
       })
+    });
+  }
+
+  function getNextOccurrence(meetingSeriesId, password, access_token) {
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'GET', 
+        url: `https://webexapis.com/v1/meetings?meetingSeriesId=${meetingSeriesId}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+          'password': password
+        },
+        json: true,
+      };
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          const nextOccurrence = {
+            start: response.data.items[0].start,
+            end: response.data.items[0].end
+          }
+          resolve(nextOccurrence);
+        });
     });
   }
 
@@ -354,13 +388,26 @@ function webexService() {
       wxAxios
       .request(options)
       .then((response)=>{
-        resolve(response.data);
-        //TODO ADD EXCEPTION HANDLING
+        if (!response.data){
+          logger.debug(
+            'could not parse response from the API: bad or invalid json payload'
+          );
+          reject(new Error('invalid json data'));
+        }
+        try {
+          resolve(response.data);
+        } catch (error) {
+          
+        }
+      })
+      .catch((error) => {
+        reject(error);
       })
     });
   }
 
   return {
+    addParticipant,
     getMe,
     getMeeting,
     getNextOccurrence,
