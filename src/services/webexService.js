@@ -338,6 +338,31 @@ function webexService() {
     });
   }
 
+  function removeParticipant(meetingInviteId, hostEmail, access_token){
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'DELETE',
+        url: `https://webexapis.com/v1/meetingInvitees/${meetingInviteId}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        params: {
+          hostEmail: hostEmail,
+          sendEmail: false
+        },
+        json: true
+      }
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          resolve(response.data)
+        })
+
+    });
+  }
+
   function toggleMeetingOption(meeting, nextOccurrence, option, access_token){
     if(meeting[option]){meeting[option] = false} else {meeting[option] = true}
     meeting.start = nextOccurrence.start;
@@ -416,6 +441,7 @@ function webexService() {
     listParticipants,
     postTokens2,
     retrieveTokens,
+    removeParticipant,
     toggleMeetingOption,
     updateCoHost
   };

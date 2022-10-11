@@ -31,6 +31,7 @@ function meetingsController() {
             });
         }
 
+        //Toggle host privilege for a participant
         if(req.query.updateHost){
             req.session.error = null;
             logger.debug('request to add a cohost')
@@ -53,6 +54,21 @@ function meetingsController() {
             });
         }
 
+        //Remove a meeting participant
+        if(req.query.removeParticipant){
+            i = req.query.index;
+            const participant = req.session.meeting.participants.items[i].id;
+            await webexService.removeParticipant(participant, req.session.meeting.hostEmail, req.session.access_token);
+            req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            res.render('meetings',{
+                title: params.appName,
+                me: req.session.me,
+                meetings: req.session.meetings,
+                meeting: req.session.meeting,
+                tab: 1,
+            });
+        }
+
         // Does request contain a meeting id query
         if(req.query.getMeeting && req.query.index){
             logger.debug('meeting selected');
@@ -69,6 +85,7 @@ function meetingsController() {
             });
         }
 
+        //Change a meeting option
         if(req.query.toggleMeetingOption){
             logger.debug('request to toggle a meeting option')
             nextOccurrence = await webexService.getNextOccurrence(req.session.meeting.id, req.session.meeting.password, req.session.access_token)
