@@ -221,7 +221,7 @@ function webexService() {
       grant_type: 'authorization_code',
       code,
       scopes: params.scopes,
-      redirect_uri: params.redirectURI,
+      redirect_uri: `${params.redirectURI}:${params.port}`,
       };
       const options = {
       method: 'POST',
@@ -273,7 +273,7 @@ function webexService() {
         client_id: params.clientId,
         client_secret: params.clientSecret,
         code: code,
-        redirect_uri: params.redirectURI,
+        redirect_uri: `${params.redirectURI}:${params.port}/`,
         };
         const options = {
         method: 'POST',

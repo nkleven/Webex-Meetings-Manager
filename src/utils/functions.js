@@ -9,7 +9,7 @@ const scopes = [
 ];
 
 const apiUri = "https://webexapis.com/v1/authorize?"
-const redirectUri = "http://127.0.0.1:4000";
+const redirectUri = `http://127.0.0.1:${params.port}`;
 
 function createAuthUri (){
 

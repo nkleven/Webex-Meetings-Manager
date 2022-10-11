@@ -29,7 +29,7 @@ const sessionTimeout = processEnv(process.env.SESSION_TIMEOUT) || 600000; // Def
 
 
 const initialURL = `https://webexapis.com/v1/authorize?&client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
-    redirectURI,
+    `${redirectURI}:${port}/`,
     )}&scope=${encodeURIComponent(scopes)}&state=${state}`;
 
 module.exports = {
