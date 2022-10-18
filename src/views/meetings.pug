@@ -20,7 +20,8 @@ block layout-content
                 tr
                   th(style='width:150px;') Date
                   th(style='width:500px;') Meeting Title
-                  th(style='width:200px;') Meeting Number
+                  th(style='width:100px;') Meeting Number
+                  th(style='Width:100px;') Join
               tbody
                 - var x = 0
                 for item in meetings.items
@@ -28,8 +29,11 @@ block layout-content
                     td #{item.start}
                     td
                       a.link(href=`/meetings?getMeeting=true&id=${item.id}&index=${x}`) #{item.title}
-                      - x++
                     td #{item.meetingNumber}
+                    td
+                      a.Link(href=`${item.webLink}` target="_blank")
+                        i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
+                    - x++
         else if meetings
           .Config
             h2 No meetings found for host

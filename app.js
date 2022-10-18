@@ -93,8 +93,6 @@ app.get('/', (req, res)=>{
   }
 });
 
-
-
 //START Web Server
 app.listen(params.port, ()=>{
     debug(`listening on port ${chalk.green(params.port)}`);

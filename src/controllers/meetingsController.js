@@ -4,8 +4,9 @@ const webexService = require('../services/webexService');
 const { append } = require('express/lib/response');
 const { request } = require('express');
 const session = require('express-session');
+const { promises } = require('winston-loki');
 const logger = require('../utils/logger')('app');
-const debug = require('debug')('meetingsController');
+const debug = require('debug')('app');
 
 function meetingsController() {
 
@@ -34,16 +35,16 @@ function meetingsController() {
         //Toggle host privilege for a participant
         if(req.query.updateHost){
             req.session.error = null;
-            logger.debug('request to add a cohost')
             const coHost = req.session.meeting.participants.items[req.query.index];
+            debug(`Request to toggle host privileges for ${coHost.displayName}`);
+            debug(`Meeting ID: ${req.session.meeting.id}`);
             try {
                 response = await webexService.updateCoHost(coHost, req.session.meeting.hostEmail ,req.session.access_token);
             } catch (error) {
-                console.debug("Didn't work");
+                debug("Didn't work");
                 req.session.error = error.response.data.message;
             }
-            req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
-            logger.debug('new host added');
+            req.session.meeting.participants = await webexService.listInvitees(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
             res.render('meetings',{
                 title: params.appName,
                 me: req.session.me,
@@ -59,7 +60,7 @@ function meetingsController() {
             i = req.query.index;
             const participant = req.session.meeting.participants.items[i].id;
             await webexService.removeParticipant(participant, req.session.meeting.hostEmail, req.session.access_token);
-            req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            req.session.meeting.participants = await webexService.listInvitees(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
             res.render('meetings',{
                 title: params.appName,
                 me: req.session.me,
@@ -74,7 +75,7 @@ function meetingsController() {
             logger.debug('meeting selected');
             meetingPassword = req.session.meetings.items[req.query.index].password
             req.session.meeting = await webexService.getMeeting(req.query.id, meetingPassword, req.session.access_token);
-            req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            req.session.meeting.participants = await webexService.listInvitees(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
             req.session.meeting.password = meetingPassword;
             res.render('meetings',{
                 title: params.appName,
@@ -91,7 +92,7 @@ function meetingsController() {
             nextOccurrence = await webexService.getNextOccurrence(req.session.meeting.id, req.session.meeting.password, req.session.access_token)
             await webexService.toggleMeetingOption(req.session.meeting, nextOccurrence, req.query.option, req.session.access_token);
             req.session.meeting = await webexService.getMeeting(req.session.meeting.id, meetingPassword, req.session.access_token);
-            req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            req.session.meeting.participants = await webexService.listInvitees(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
             logger.debug('Option Toggled');
             res.render('meetings',{
                 title: params.appName,
@@ -121,7 +122,7 @@ function meetingsController() {
         if(req.body.newParticipant){
             debug(`Attempting to add ${req.body.newParticipant}`);
             response = await webexService.addParticipant(req.session.meeting.id, req.body.newParticipant, req.session.meeting.hostEmail, req.session.access_token);
-            req.session.meeting.participants = await webexService.listParticipants(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
+            req.session.meeting.participants = await webexService.listInvitees(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
             debug('adding participant');
             res.render('meetings',{
                 meeting: req.session.meeting,

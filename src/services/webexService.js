@@ -187,7 +187,8 @@ function webexService() {
       });
   }
 
-  function listParticipants(meetingId, hostEmail, access_token){
+  // Get a list of people invited to a meeting.  Invitees are people invited, participants are people in the meeting
+  function listInvitees(meetingId, hostEmail, access_token){
 
     return new Promise((resolve, reject)=>{
       const options = {
@@ -212,6 +213,51 @@ function webexService() {
 
     });
     
+  }
+
+  function listMeetings(hostEmail, access_token){
+    return new Promise((resolve, reject) => {
+      const options = {
+      method: 'GET',
+      url: `https://webexapis.com/v1/meetings?hostEmail=${hostEmail}`,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${access_token}`
+      },
+      json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+        //TODO ADD EXCEPTION HANDLING
+      })
+    });
+  }
+
+  function listParticipants(meetingId, hostEmail, access_token){
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'GET',
+        url: `https://webexapis.com/v1/meetingParticipants`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        params: {
+          meetingId: meetingId,
+          hostEmail: hostEmail
+        },
+        json: true
+      }
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          resolve(response.data)
+        })
+    });
   }
 
   function postTokens2(code) {
@@ -317,27 +363,6 @@ function webexService() {
     });
   }
 
-  function listMeetings(hostEmail, access_token){
-    return new Promise((resolve, reject) => {
-      const options = {
-      method: 'GET',
-      url: `https://webexapis.com/v1/meetings?hostEmail=${hostEmail}`,
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `Bearer ${access_token}`
-      },
-      json: true,
-      };
-
-      wxAxios
-      .request(options)
-      .then((response)=>{
-        resolve(response.data);
-        //TODO ADD EXCEPTION HANDLING
-      })
-    });
-  }
-
   function removeParticipant(meetingInviteId, hostEmail, access_token){
     return new Promise((resolve, reject)=>{
       const options = {
@@ -437,6 +462,7 @@ function webexService() {
     getMeeting,
     getNextOccurrence,
     getPayload,
+    listInvitees,
     listMeetings,
     listParticipants,
     postTokens2,
