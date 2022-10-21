@@ -2,7 +2,7 @@ const functions = require('../utils/functions');
 const params = require('../utils/params');
 const webexService = require('../services/webexService');
 const { append } = require('express/lib/response');
-const { request } = require('express');
+const { request, response } = require('express');
 const session = require('express-session');
 const { promises } = require('winston-loki');
 const logger = require('../utils/logger')('app');
@@ -39,7 +39,7 @@ function meetingsController() {
             debug(`Request to toggle host privileges for ${coHost.displayName}`);
             debug(`Meeting ID: ${req.session.meeting.id}`);
             try {
-                response = await webexService.updateCoHost(coHost, req.session.meeting.hostEmail ,req.session.access_token);
+                await webexService.updateCoHost(coHost, req.session.meeting.hostEmail ,req.session.access_token);
             } catch (error) {
                 debug("Didn't work");
                 req.session.error = error.response.data.message;
@@ -102,6 +102,29 @@ function meetingsController() {
                 tab: 2,
             });
         }
+
+        //Add current user as a host to a meeting and then join the meeting automatically
+        if(req.query.forceJoin){
+            const i = req.query.index;
+            const meetingId = req.session.meetings.items[i].id;
+            const newHost = req.session.me.emailAddress;
+            const hostEmail = req.session.meetings.items[i].hostEmail;
+            const joinUrl = req.session.meetings.items[i].webLink;
+            debug(`stop here`);
+            const response = await webexService.addParticipant(meetingId, newHost, hostEmail, req.session.access_token);
+            const coHost = {
+                coHost: false,
+                displayName: req.session.me.displayName,
+                email: req.session.me.emailAddress,
+                id: response.id,
+                meetingId: meetingId,
+                panelist: false
+            }
+            await webexService.updateCoHost(coHost, hostEmail ,req.session.access_token);
+            req.session.meeting.participants = await webexService.listInvitees(meetingId, hostEmail, req.session.access_token);
+            res.redirect(joinUrl);
+
+        }
     }
 
     //  
@@ -121,7 +144,7 @@ function meetingsController() {
 
         if(req.body.newParticipant){
             debug(`Attempting to add ${req.body.newParticipant}`);
-            response = await webexService.addParticipant(req.session.meeting.id, req.body.newParticipant, req.session.meeting.hostEmail, req.session.access_token);
+            await webexService.addParticipant(req.session.meeting.id, req.body.newParticipant, req.session.meeting.hostEmail, req.session.access_token);
             req.session.meeting.participants = await webexService.listInvitees(req.session.meeting.id, req.session.meeting.hostEmail, req.session.access_token);
             debug('adding participant');
             res.render('meetings',{

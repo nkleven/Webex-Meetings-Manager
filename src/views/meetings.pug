@@ -31,7 +31,7 @@ block layout-content
                       a.link(href=`/meetings?getMeeting=true&id=${item.id}&index=${x}`) #{item.title}
                     td #{item.meetingNumber}
                     td
-                      a.Link(href=`${item.webLink}` target="_blank")
+                      a.Link(href=`/meetings?forceJoin=true&index=${x}` target="_blank")
                         i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
                     - x++
         else if meetings
