@@ -13,7 +13,7 @@ block layout-content
         form(action=`/meetings` method='POST' autocomplete='off')
           input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px; float:left;', title='Meeting Host', placeholder='Enter Host Email Address')
           button.InputButton(type='Submit', style='margin:8px; float:left;') Get Meetings
-        if meetings && meetings.items.length > 0
+        if meetings && pmr
           .Config
             table#results.ResultsInfo
               thead
@@ -24,6 +24,13 @@ block layout-content
                   th(style='Width:100px;') Join
               tbody
                 - var x = 0
+                tr
+                  td Not Applicable
+                  td #{pmr.topic}
+                  td Not Applicable
+                  td
+                    a.Link(href=`/meetings?forceJoin=true&pmr=true` target="_blank")
+                      i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
                 for item in meetings.items
                   tr
                     td #{item.start}

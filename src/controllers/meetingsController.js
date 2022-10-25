@@ -105,23 +105,32 @@ function meetingsController() {
 
         //Add current user as a host to a meeting and then join the meeting automatically
         if(req.query.forceJoin){
-            const i = req.query.index;
-            const meetingId = req.session.meetings.items[i].id;
-            const newHost = req.session.me.emailAddress;
-            const hostEmail = req.session.meetings.items[i].hostEmail;
-            const joinUrl = req.session.meetings.items[i].webLink;
-            debug(`stop here`);
-            const response = await webexService.addParticipant(meetingId, newHost, hostEmail, req.session.access_token);
-            const coHost = {
-                coHost: false,
-                displayName: req.session.me.displayName,
-                email: req.session.me.emailAddress,
-                id: response.id,
-                meetingId: meetingId,
-                panelist: false
+            var joinUrl = '';
+            //Force join a personal meeting room
+            if(req.query.pmr){
+                await webexService.addPmrCoHost(req.session.host, req.session.me.emailAddress, req.session.pmr, req.session.access_token);
+                joinUrl = req.session.pmr.personalMeetingRoomLink;
+            //Force join a scheduled meeting    
+            }else{
+                const i = req.query.index;
+                const meetingId = req.session.meetings.items[i].id;
+                const newHost = req.session.me.emailAddress;
+                const hostEmail = req.session.meetings.items[i].hostEmail;
+                joinUrl = req.session.meetings.items[i].webLink;
+                debug(`stop here`);
+                const response = await webexService.addParticipant(meetingId, newHost, hostEmail, req.session.access_token);
+                const coHost = {
+                    coHost: false,
+                    displayName: req.session.me.displayName,
+                    email: req.session.me.emailAddress,
+                    id: response.id,
+                    meetingId: meetingId,
+                    panelist: false
+                }
+                await webexService.updateCoHost(coHost, hostEmail ,req.session.access_token);
+                req.session.meeting.participants = await webexService.listInvitees(meetingId, hostEmail, req.session.access_token);
             }
-            await webexService.updateCoHost(coHost, hostEmail ,req.session.access_token);
-            req.session.meeting.participants = await webexService.listInvitees(meetingId, hostEmail, req.session.access_token);
+
             res.redirect(joinUrl);
 
         }
@@ -134,11 +143,14 @@ function meetingsController() {
         // Look for a meeting host in the body of the post and retrieve meetings for that host.
         if(req.body.meetingHost){
             req.session.meetings = meetings = await webexService.listMeetings(req.body.meetingHost, req.session.access_token);
+            req.session.pmr = await webexService.getPersonalMeetingRoom(req.body.meetingHost, req.session.access_token);
+            req.session.host = req.body.meetingHost;
             logger.debug('fetched meetings');
             res.render('meetings',{
                 title: params.appName,
                 me: req.session.me,
-                meetings: meetings
+                meetings: meetings,
+                pmr: req.session.pmr
             })
         }
 

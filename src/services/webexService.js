@@ -4,6 +4,7 @@ const functions = require('../utils/functions');
 const rateLimit = require('axios-rate-limit');
 const qs = require('qs');
 const params = require('../utils/params');
+const session = require('express-session');
 const logger = require('../utils/logger')('webexService');
 
 const wxAxios = rateLimit(axios.create({ timeout: params.apiTimeout }),
@@ -75,6 +76,37 @@ function webexService() {
     });
   }
 
+  function addPmrCoHost(userEmail, coHostEmail, pmr, access_token){
+    return new Promise((resolve, reject)=>{
+      const options= {
+        method: 'PUT',
+        url: `https://webexapis.com/v1/meetingPreferences/personalMeetingRoom?userEmail=${userEmail}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json'
+        },
+        data: {
+          topic: pmr.topic,
+          hostPin: pmr.hostPin,
+          enableAutoLock: pmr.enabledAutoLock,
+          autoLockMinutes: pmr.autoLockMinutes,
+          enableNotifyHost: pmr.enabledNotifyHost,
+          supportCoHost: pmr.supportCoHost,
+          coHosts : [{
+            email: coHostEmail
+          }]
+        },
+        json: true
+      }
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+      })
+    })
+  }
+
   function getMe(access_token) {
     return new Promise((resolve, reject)=> {
       const options = {
@@ -118,6 +150,7 @@ function webexService() {
     });
   }
 
+  //Get details of a specific meetingId
   function getMeeting(meetingId, meetingPassword, access_token){
     return new Promise((resolve, reject) => {
       const options = {
@@ -179,6 +212,27 @@ function webexService() {
         json: true
       };
       //This change is just a test
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          resolve(response.data)
+        })
+      });
+  }
+
+  //Get Personal Meeting Room details for a given email address
+  function getPersonalMeetingRoom(userEmail, access_token){
+    return new Promise ((resolve, reject)=>{
+      const options = {
+        method: 'GET',
+        url: `https://webexapis.com/v1/meetingPreferences/personalMeetingRoom?userEmail=${userEmail}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        json: true
+      };
+
       wxAxios
         .request(options)
         .then((response)=>{
@@ -458,10 +512,12 @@ function webexService() {
 
   return {
     addParticipant,
+    addPmrCoHost,
     getMe,
     getMeeting,
     getNextOccurrence,
     getPayload,
+    getPersonalMeetingRoom,
     listInvitees,
     listMeetings,
     listParticipants,
