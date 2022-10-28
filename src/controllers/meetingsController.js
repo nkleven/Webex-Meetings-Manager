@@ -14,7 +14,7 @@ function meetingsController() {
         // Get display name of logged in user
         req.session.me = await webexService.getMe(req.session.access_token);
 
-        if (req.session.me.roles.length == 0){
+        if (!req.session.me.roles){
             res.render('meetings', {
                 title:params.appName,
                 me: req.session.me,
