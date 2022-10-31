@@ -92,9 +92,14 @@ function webexService() {
           autoLockMinutes: pmr.autoLockMinutes,
           enableNotifyHost: pmr.enabledNotifyHost,
           supportCoHost: pmr.supportCoHost,
-          coHosts : [{
-            email: coHostEmail
-          }]
+          supportAnyoneAsCoHost: pmr.supportAnyoneAsCoHost,
+          allowFirstUserToBeCoHost: pmr.allowFirstUserToBeCoHost,
+          allowAuthenticatedDevices: pmr.allowAuthenticatedDevices,
+          coHosts : [
+            {
+            email : coHostEmail
+            }
+          ]
         },
         json: true
       }

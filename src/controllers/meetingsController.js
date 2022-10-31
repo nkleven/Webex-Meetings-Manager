@@ -108,7 +108,7 @@ function meetingsController() {
             var joinUrl = '';
             //Force join a personal meeting room
             if(req.query.pmr){
-                await webexService.addPmrCoHost(req.session.host, req.session.me.emailAddress, req.session.pmr, req.session.access_token);
+                const response = await webexService.addPmrCoHost(req.session.host, req.session.me.emailAddress, req.session.pmr, req.session.access_token);
                 joinUrl = req.session.pmr.personalMeetingRoomLink;
             //Force join a scheduled meeting    
             }else{
@@ -118,17 +118,20 @@ function meetingsController() {
                 const hostEmail = req.session.meetings.items[i].hostEmail;
                 joinUrl = req.session.meetings.items[i].webLink;
                 debug(`stop here`);
-                const response = await webexService.addParticipant(meetingId, newHost, hostEmail, req.session.access_token);
+                const currentInvitees = await webexService.listInvitees(meetingId, hostEmail, req.session.access_token);
+                var invitee = currentInvitees.items.find(invitee => invitee.email === newHost);
+                if(!invitee){
+                    invitee = await webexService.addParticipant(meetingId, newHost, hostEmail, req.session.access_token);
+                }
                 const coHost = {
                     coHost: false,
                     displayName: req.session.me.displayName,
                     email: req.session.me.emailAddress,
-                    id: response.id,
+                    id: invitee.id,
                     meetingId: meetingId,
                     panelist: false
                 }
-                await webexService.updateCoHost(coHost, hostEmail ,req.session.access_token);
-                req.session.meeting.participants = await webexService.listInvitees(meetingId, hostEmail, req.session.access_token);
+                await webexService.updateCoHost(invitee, hostEmail ,req.session.access_token);
             }
 
             res.redirect(joinUrl);
