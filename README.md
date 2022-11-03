@@ -13,7 +13,7 @@
     - spark-admin:people_read 
     - meeting:admin_participants_read 
     - meeting:controls_read meeting:controls_write
-  -Document the following:
+  - Document the following:
     - Client ID
     - Client Secret
     - Integration ID
