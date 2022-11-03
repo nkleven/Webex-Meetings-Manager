@@ -111,9 +111,7 @@ function meetingsController() {
             if(req.query.pmr){
                 const response = await webexService.addPmrCoHost(req.session.host, req.session.me.emailAddress, req.session.pmr, req.session.access_token);
                 joinUrl = req.session.pmr.personalMeetingRoomLink;
-                const urlParts = req.session.pmr.telephony.links[0].href.split("/");
-                const pmrId = urlParts[3];
-                await webexService.unlockMeeting(pmrId, req.session.access_token);
+                await webexService.unlockMeeting(req.session.pmr.id, req.session.access_token);
             //Force join a scheduled meeting    
             }else{
                 const i = req.query.index;
@@ -150,7 +148,9 @@ function meetingsController() {
         if(req.body.meetingHost){
             req.session.meetings = meetings = await webexService.listMeetings(req.body.meetingHost, req.session.access_token);
             req.session.pmr = await webexService.getPersonalMeetingRoom(req.body.meetingHost, req.session.access_token);
-            req.session.pmr.state = await webexService.getPersonalMeetingRoomState(req.body.meetingHost, req.session.access_token);
+            req.session.pmr.state = await webexService.getPersonalMeetingRoomState(req.session.pmr.personalMeetingRoomLink, req.session.access_token);
+            const urlParts = req.session.pmr.telephony.links[0].href.split("/");
+            req.session.pmr.id = urlParts[3];
             req.session.host = req.body.meetingHost;
             logger.debug('fetched meetings');
             res.render('meetings',{

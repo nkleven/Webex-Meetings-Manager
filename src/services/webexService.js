@@ -256,11 +256,12 @@ function webexService() {
       });
   }
 
-  function getPersonalMeetingRoomState(hostEmail, access_token){
+  function getPersonalMeetingRoomState(pmrLink, access_token){
+    const encodedUri = encodeURIComponent(pmrLink);
     return new Promise((resolve, reject) => {
       const options = {
       method: 'GET',
-      url: `https://webexapis.com/v1/meetings?meetingType=meeting&hostEmail=${hostEmail}`,
+      url: `https://webexapis.com/v1/meetings?meetingType=meeting&webLink=${pmrLink}`,
       headers: {
         'Content-Type': 'application/json',
         authorization: `Bearer ${access_token}`
