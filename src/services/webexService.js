@@ -147,10 +147,10 @@ function webexService() {
             logger.debug('personal data received');
             const me = {};
             if (response.data.roles){
-                me.displayName = response.data.displayName;
-                me.emailAddress = response.data.emails[0];
                 me.roles = functions.parseRoles(response.data.roles);
             }
+            me.displayName = response.data.displayName;
+            me.emailAddress = response.data.emails[0];
 
             resolve(me);
           }

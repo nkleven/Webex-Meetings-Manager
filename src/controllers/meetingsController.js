@@ -16,6 +16,7 @@ function meetingsController() {
         req.session.me = await webexService.getMe(req.session.access_token);
 
         if (!req.session.me.roles){
+            req.session.me = await webexService.getMe(req.session.access_token);
             res.render('meetings', {
                 title:params.appName,
                 me: req.session.me,
