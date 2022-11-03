@@ -12,10 +12,15 @@ const debug = require('debug')('app');
 function meetingsController() {
 
     async function getIndex(req, res){
-        // Get display name of logged in user
+        // Get display name and email address of signed in user and check for full administrator
         req.session.me = await webexService.getMe(req.session.access_token);
+        var adminRole = false;
+        if(req.session.me.roles){
+            adminRole = req.session.me.roles.find(role => role.name === 'Full Administrator');
+        }
 
-        if (!req.session.me.roles){
+        // Logged in user is not a full administrator
+        if (!adminRole){
             req.session.me = await webexService.getMe(req.session.access_token);
             res.render('meetings', {
                 title:params.appName,
