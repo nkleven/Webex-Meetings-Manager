@@ -10,6 +10,16 @@ const logger = require('../utils/logger')('webexService');
 const wxAxios = rateLimit(axios.create({ timeout: params.apiTimeout }),
   { maxRPS: 5 });
 
+axios.interceptors.request.use(request => {
+  console.log('Starting Request', JSON.stringify(request, null, 2))
+  return request
+})
+  
+axios.interceptors.response.use(response => {
+  console.log('Response:', JSON.stringify(response, null, 2))
+  return response
+})
+
 axiosRetry(wxAxios, {
   retries: 5,
   retryDelay: (retryCount, error) => {
@@ -246,6 +256,27 @@ function webexService() {
       });
   }
 
+  function getPersonalMeetingRoomState(hostEmail, access_token){
+    return new Promise((resolve, reject) => {
+      const options = {
+      method: 'GET',
+      url: `https://webexapis.com/v1/meetings?meetingType=meeting&hostEmail=${hostEmail}`,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${access_token}`
+      },
+      json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data.items[0].state);
+        //TODO ADD EXCEPTION HANDLING
+      })
+    });
+  }
+
   // Get a list of people invited to a meeting.  Invitees are people invited, participants are people in the meeting
   function listInvitees(meetingId, hostEmail, access_token){
 
@@ -472,6 +503,36 @@ function webexService() {
     });
   }
 
+  function unlockMeeting(meetingId, access_token){
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'PUT',
+        url: `https://webexapis.com/v1/meetings/controls?meetingId=${meetingId}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        data: {
+          locked: false
+        },
+        json: true,
+      }
+      
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        try {
+          resolve(response.data);
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .catch((error)=>{
+        
+      })
+    })
+  }
+
   function updateCoHost(coHost, hostEmail, access_token){
     let newStatus = true;
     if(coHost.coHost == true){newStatus = false};
@@ -523,6 +584,7 @@ function webexService() {
     getNextOccurrence,
     getPayload,
     getPersonalMeetingRoom,
+    getPersonalMeetingRoomState,
     listInvitees,
     listMeetings,
     listParticipants,
@@ -530,6 +592,7 @@ function webexService() {
     retrieveTokens,
     removeParticipant,
     toggleMeetingOption,
+    unlockMeeting,
     updateCoHost
   };
 }

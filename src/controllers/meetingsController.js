@@ -5,6 +5,7 @@ const { append } = require('express/lib/response');
 const { request, response } = require('express');
 const session = require('express-session');
 const { promises } = require('winston-loki');
+const { data } = require('jquery');
 const logger = require('../utils/logger')('app');
 const debug = require('debug')('app');
 
@@ -110,6 +111,9 @@ function meetingsController() {
             if(req.query.pmr){
                 const response = await webexService.addPmrCoHost(req.session.host, req.session.me.emailAddress, req.session.pmr, req.session.access_token);
                 joinUrl = req.session.pmr.personalMeetingRoomLink;
+                const urlParts = req.session.pmr.telephony.links[0].href.split("/");
+                const pmrId = urlParts[3];
+                await webexService.unlockMeeting(pmrId, req.session.access_token);
             //Force join a scheduled meeting    
             }else{
                 const i = req.query.index;
@@ -132,10 +136,9 @@ function meetingsController() {
                     panelist: false
                 }
                 await webexService.updateCoHost(invitee, hostEmail ,req.session.access_token);
+                await webexService.unlockMeeting(meetingId, req.session.access_token);
             }
-
             res.redirect(joinUrl);
-
         }
     }
 
@@ -147,6 +150,7 @@ function meetingsController() {
         if(req.body.meetingHost){
             req.session.meetings = meetings = await webexService.listMeetings(req.body.meetingHost, req.session.access_token);
             req.session.pmr = await webexService.getPersonalMeetingRoom(req.body.meetingHost, req.session.access_token);
+            req.session.pmr.state = await webexService.getPersonalMeetingRoomState(req.body.meetingHost, req.session.access_token);
             req.session.host = req.body.meetingHost;
             logger.debug('fetched meetings');
             res.render('meetings',{

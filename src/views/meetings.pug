@@ -28,18 +28,24 @@ block layout-content
                   td Not Applicable
                   td #{pmr.topic}
                   td Not Applicable
-                  td
-                    a.Link(href=`/meetings?forceJoin=true&pmr=true` target="_blank")
-                      i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
+                  if pmr.state === 'inProgress'
+                    td
+                      a.Link(href=`/meetings?forceJoin=true&pmr=true` target="_blank")
+                        i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
+                  else
+                    td Not Started
                 for item in meetings.items
                   tr
                     td #{item.start}
                     td
                       a.link(href=`/meetings?getMeeting=true&id=${item.id}&index=${x}`) #{item.title}
                     td #{item.meetingNumber}
-                    td
-                      a.Link(href=`/meetings?forceJoin=true&index=${x}` target="_blank")
-                        i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
+                    if item.state === 'inProgress'
+                      td
+                        a.Link(href=`/meetings?forceJoin=true&index=${x}` target="_blank")
+                          i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
+                    else
+                      td Not Started
                     - x++
         else if meetings
           .Config
