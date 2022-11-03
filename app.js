@@ -83,7 +83,7 @@ app.get('/', (req, res)=>{
   }
   if (!req.session.isAuthenticated){
     res.render('index', {
-      title: 'Meeting Manager',
+      title: params.appName,
       authUri: params.initialURL,
       authenticated: false
     });
@@ -92,8 +92,6 @@ app.get('/', (req, res)=>{
 
   }
 });
-
-
 
 //START Web Server
 app.listen(params.port, ()=>{

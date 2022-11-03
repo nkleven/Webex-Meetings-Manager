@@ -1,12 +1,24 @@
 const axios = require('axios');
 const axiosRetry = require('axios-retry');
+const functions = require('../utils/functions');
 const rateLimit = require('axios-rate-limit');
 const qs = require('qs');
 const params = require('../utils/params');
+const session = require('express-session');
 const logger = require('../utils/logger')('webexService');
 
 const wxAxios = rateLimit(axios.create({ timeout: params.apiTimeout }),
   { maxRPS: 5 });
+
+axios.interceptors.request.use(request => {
+  console.log('Starting Request', JSON.stringify(request, null, 2))
+  return request
+})
+  
+axios.interceptors.response.use(response => {
+  console.log('Response:', JSON.stringify(response, null, 2))
+  return response
+})
 
 axiosRetry(wxAxios, {
   retries: 5,
@@ -48,6 +60,68 @@ axiosRetry(wxAxios, {
 
 function webexService() {
 
+  function addParticipant(meetingId, emailAddress, hostEmail, access_token) {
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'POST',
+        url: 'https://webexapis.com/v1/meetingInvitees',
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json'
+        },
+        data : {
+          meetingId: meetingId,
+          email: emailAddress,
+          sendEmail: false,
+          hostEmail: hostEmail
+        },
+        json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+      });
+    });
+  }
+
+  function addPmrCoHost(userEmail, coHostEmail, pmr, access_token){
+    return new Promise((resolve, reject)=>{
+      const options= {
+        method: 'PUT',
+        url: `https://webexapis.com/v1/meetingPreferences/personalMeetingRoom?userEmail=${userEmail}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json'
+        },
+        data: {
+          topic: pmr.topic,
+          hostPin: pmr.hostPin,
+          enableAutoLock: pmr.enabledAutoLock,
+          autoLockMinutes: pmr.autoLockMinutes,
+          enableNotifyHost: pmr.enabledNotifyHost,
+          supportCoHost: pmr.supportCoHost,
+          supportAnyoneAsCoHost: pmr.supportAnyoneAsCoHost,
+          allowFirstUserToBeCoHost: pmr.allowFirstUserToBeCoHost,
+          allowAuthenticatedDevices: pmr.allowAuthenticatedDevices,
+          coHosts : [
+            {
+            email : coHostEmail
+            }
+          ]
+        },
+        json: true
+      }
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+      })
+    })
+  }
+
   function getMe(access_token) {
     return new Promise((resolve, reject)=> {
       const options = {
@@ -71,7 +145,14 @@ function webexService() {
           }
           try{
             logger.debug('personal data received');
-            resolve(response.data);
+            const me = {};
+            if (response.data.roles){
+                me.roles = functions.parseRoles(response.data.roles);
+            }
+            me.displayName = response.data.displayName;
+            me.emailAddress = response.data.emails[0];
+
+            resolve(me);
           }
           catch{
             logger.debug('unable to retrieve displayName');
@@ -84,6 +165,7 @@ function webexService() {
     });
   }
 
+  //Get details of a specific meetingId
   function getMeeting(meetingId, meetingPassword, access_token){
     return new Promise((resolve, reject) => {
       const options = {
@@ -103,6 +185,31 @@ function webexService() {
         resolve(response.data);
         //TODO ADD EXCEPTION HANDLING
       })
+    });
+  }
+
+  function getNextOccurrence(meetingSeriesId, password, access_token) {
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'GET', 
+        url: `https://webexapis.com/v1/meetings?meetingSeriesId=${meetingSeriesId}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+          'password': password
+        },
+        json: true,
+      };
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          const nextOccurrence = {
+            start: response.data.items[0].start,
+            end: response.data.items[0].end
+          }
+          resolve(nextOccurrence);
+        });
     });
   }
 
@@ -128,7 +235,51 @@ function webexService() {
       });
   }
 
-  function listParticipants(meetingId, hostEmail, access_token){
+  //Get Personal Meeting Room details for a given email address
+  function getPersonalMeetingRoom(userEmail, access_token){
+    return new Promise ((resolve, reject)=>{
+      const options = {
+        method: 'GET',
+        url: `https://webexapis.com/v1/meetingPreferences/personalMeetingRoom?userEmail=${userEmail}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        json: true
+      };
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          resolve(response.data)
+        })
+      });
+  }
+
+  function getPersonalMeetingRoomState(pmrLink, access_token){
+    const encodedUri = encodeURIComponent(pmrLink);
+    return new Promise((resolve, reject) => {
+      const options = {
+      method: 'GET',
+      url: `https://webexapis.com/v1/meetings?meetingType=meeting&webLink=${pmrLink}`,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${access_token}`
+      },
+      json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data.items[0].state);
+        //TODO ADD EXCEPTION HANDLING
+      })
+    });
+  }
+
+  // Get a list of people invited to a meeting.  Invitees are people invited, participants are people in the meeting
+  function listInvitees(meetingId, hostEmail, access_token){
 
     return new Promise((resolve, reject)=>{
       const options = {
@@ -155,6 +306,51 @@ function webexService() {
     
   }
 
+  function listMeetings(hostEmail, access_token){
+    return new Promise((resolve, reject) => {
+      const options = {
+      method: 'GET',
+      url: `https://webexapis.com/v1/meetings?hostEmail=${hostEmail}`,
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${access_token}`
+      },
+      json: true,
+      };
+
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        resolve(response.data);
+        //TODO ADD EXCEPTION HANDLING
+      })
+    });
+  }
+
+  function listParticipants(meetingId, hostEmail, access_token){
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'GET',
+        url: `https://webexapis.com/v1/meetingParticipants`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        params: {
+          meetingId: meetingId,
+          hostEmail: hostEmail
+        },
+        json: true
+      }
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          resolve(response.data)
+        })
+    });
+  }
+
   function postTokens2(code) {
   return new Promise((resolve, reject) => {
       const oAuthHeader = Buffer.from(`${params.clientId}:${params.clientSecret}`).toString('base64');
@@ -162,7 +358,7 @@ function webexService() {
       grant_type: 'authorization_code',
       code,
       scopes: params.scopes,
-      redirect_uri: params.redirectURI,
+      redirect_uri: `${params.redirectURI}:${params.port}`,
       };
       const options = {
       method: 'POST',
@@ -214,7 +410,7 @@ function webexService() {
         client_id: params.clientId,
         client_secret: params.clientSecret,
         code: code,
-        redirect_uri: params.redirectURI,
+        redirect_uri: `${params.redirectURI}:${params.port}/`,
         };
         const options = {
         method: 'POST',
@@ -258,15 +454,44 @@ function webexService() {
     });
   }
 
-  function listMeetings(hostEmail, access_token){
+  function removeParticipant(meetingInviteId, hostEmail, access_token){
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'DELETE',
+        url: `https://webexapis.com/v1/meetingInvitees/${meetingInviteId}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        params: {
+          hostEmail: hostEmail,
+          sendEmail: false
+        },
+        json: true
+      }
+
+      wxAxios
+        .request(options)
+        .then((response)=>{
+          resolve(response.data)
+        })
+
+    });
+  }
+
+  function toggleMeetingOption(meeting, nextOccurrence, option, access_token){
+    if(meeting[option]){meeting[option] = false} else {meeting[option] = true}
+    meeting.start = nextOccurrence.start;
+    meeting.end = nextOccurrence.end;
     return new Promise((resolve, reject) => {
       const options = {
-      method: 'GET',
-      url: `https://webexapis.com/v1/meetings?hostEmail=${hostEmail}`,
+      method: 'PUT',
+      url: `https://webexapis.com/v1/meetings/${meeting.id}`,
       headers: {
         'Content-Type': 'application/json',
         authorization: `Bearer ${access_token}`
       },
+      data: meeting,
       json: true,
       };
 
@@ -277,6 +502,36 @@ function webexService() {
         //TODO ADD EXCEPTION HANDLING
       })
     });
+  }
+
+  function unlockMeeting(meetingId, access_token){
+    return new Promise((resolve, reject)=>{
+      const options = {
+        method: 'PUT',
+        url: `https://webexapis.com/v1/meetings/controls?meetingId=${meetingId}`,
+        headers: {
+          authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+        data: {
+          locked: false
+        },
+        json: true,
+      }
+      
+      wxAxios
+      .request(options)
+      .then((response)=>{
+        try {
+          resolve(response.data);
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .catch((error)=>{
+        
+      })
+    })
   }
 
   function updateCoHost(coHost, hostEmail, access_token){
@@ -304,20 +559,41 @@ function webexService() {
       wxAxios
       .request(options)
       .then((response)=>{
-        resolve(response.data);
-        //TODO ADD EXCEPTION HANDLING
+        if (!response.data){
+          logger.debug(
+            'could not parse response from the API: bad or invalid json payload'
+          );
+          reject(new Error('invalid json data'));
+        }
+        try {
+          resolve(response.data);
+        } catch (error) {
+          
+        }
+      })
+      .catch((error) => {
+        reject(error);
       })
     });
   }
 
   return {
+    addParticipant,
+    addPmrCoHost,
     getMe,
     getMeeting,
+    getNextOccurrence,
     getPayload,
+    getPersonalMeetingRoom,
+    getPersonalMeetingRoomState,
+    listInvitees,
     listMeetings,
     listParticipants,
     postTokens2,
     retrieveTokens,
+    removeParticipant,
+    toggleMeetingOption,
+    unlockMeeting,
     updateCoHost
   };
 }

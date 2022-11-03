@@ -22,14 +22,14 @@ const clientId = process.env.CLIENT_ID;
 const clientSecret = process.env.CLIENT_SECRET;
 const port = process.env.PORT;
 const redirectURI = process.env.REDIRECT_URI;
-const scopes = 'meeting:admin_preferences_write meeting:admin_schedule_write meeting:admin_preferences_read meeting:admin_schedule_read spark:kms spark-admin:people_read meeting:admin_participants_read';
+const scopes = 'meeting:admin_preferences_write meeting:admin_schedule_write meeting:admin_preferences_read meeting:admin_schedule_read spark:kms spark-admin:people_read meeting:admin_participants_read meeting:controls_read meeting:controls_write';
 const state = process.env.STATE_SECRET;
 const sessionSecret = processEnv(process.env.SESSION_SECRET) || 'please-change-me-to-a-session-secret';
 const sessionTimeout = processEnv(process.env.SESSION_TIMEOUT) || 600000; // Default 10mins
 
 
 const initialURL = `https://webexapis.com/v1/authorize?&client_id=${clientId}&response_type=code&redirect_uri=${encodeURIComponent(
-    redirectURI,
+    `${redirectURI}:${port}/`,
     )}&scope=${encodeURIComponent(scopes)}&state=${state}`;
 
 module.exports = {

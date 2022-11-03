@@ -5,56 +5,126 @@ block extra-head
 block layout-content
   .UserView
     h1 #{title}
-    h2 Hello #{me}
-    form(action=`/meetings` method='POST' autocomplete='off')
-      input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px', title='Meeting Host', placeholder='Enter Host Email Address')
-      button.InputButton(type='Submit', style='margin:8px;') Get Meetings
-    if meetings && meetings.items.length > 0
-      .Config
-        table#results.ResultsInfo
-          thead
-            tr
-              th(style='width:150px;') Date
-              th(style='width:500px;') Meeting Title
-              th(style='width:200px;') Meeting Number
-          tbody
-            - var x = 0
-            for item in meetings.items
-              tr
-                td #{item.start}
-                td 
-                  a.link(href=`/meetings?getMeeting&id=${item.id}&index=${x}`) #{item.title}
-                  - x++
-                td #{item.meetingNumber}
-    else if meetings
-      .Config
-        h2 No meetings found for host
-    if meeting
-      .tabs
-        input.input(name='tabs', type='radio', id='tab-1', checked)
-        label.label(for='tab-1') Meeting Details
-        .panel
-          div
-            table.DetailsInfo
-              tr
-                th Meeting Name
-                td #{meeting.title}
-              tr
-                th Meeting Host
-                td #{meeting.hostDisplayName}
-              tr
-                th(rowspan= meeting.participants.items.length + 1)(style='width: 150px;') Participants
-                - var x = 0
-                for item in meeting.participants.items
+    h2 Hello #{me.displayName} (#{me.emailAddress})
+    .tabs-nomax
+      input.input(name='main-tabs', type='radio', id='main-tab-1', checked)
+      label.label(for='main-tab-1') Meetings
+      .panel
+        if me.roles
+          form(action=`/meetings` method='POST' autocomplete='off')
+            input#meetingHost.InputBox(name='meetingHost', style='width: 450px; margin: 8px; float:left;', title='Meeting Host', placeholder='Enter Host Email Address')
+            button.InputButton(type='Submit', style='margin:8px; float:left;') Get Meetings
+          if meetings && pmr
+            .Config
+              table#results.ResultsInfo
+                thead
                   tr
-                    td
-                      | #{item.displayName}
-                      if item.coHost
-                        i(class='fa fa-check icon-yes', title='Cohost')
-                        a.Link(href=`/meetings/?id=${meeting.id}&removeHost=true&index=${x}`)
-                          button#removeHost.RowButton(style='float:right;') Remove Co-Host
+                    th(style='width:150px;') Date
+                    th(style='width:500px;') Meeting Title
+                    th(style='width:100px;') Meeting Number
+                    th(style='Width:100px;') Join
+                tbody
+                  - var x = 0
+                  tr
+                    td Not Applicable
+                    td #{pmr.topic}
+                    td Not Applicable
+                    if pmr.state === 'inProgress'
+                      td
+                        a.Link(href=`/meetings?forceJoin=true&pmr=true` target="_blank")
+                          i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
+                    else
+                      td Not Started
+                  for item in meetings.items
+                    tr
+                      td #{item.start}
+                      td
+                        a.link(href=`/meetings?getMeeting=true&id=${item.id}&index=${x}`) #{item.title}
+                      td #{item.meetingNumber}
+                      if item.state === 'inProgress'
+                        td
+                          a.Link(href=`/meetings?forceJoin=true&index=${x}` target="_blank")
+                            i(class='fa fa-video-camera icon-yes fa-2x', title='Join')
                       else
-                        a.Link(href=`/meetings/?id=${meeting.id}&elevateHost=true&index=${x}`)
-                          button#elevateHost.RowButton(style='float:right;') Make Co-Host
+                        td Not Started
                       - x++
-                    
+          else if meetings
+            .Config
+              h2 No meetings found for host
+          if meeting
+            div
+            h2 #{meeting.title}
+            .tabs
+              if tab == 1
+                input.input(name='meeting-tabs', type='radio', id='meeting-tab-1', checked)
+              else
+                input.input(name='meeting-tabs', type='radio', id='meeting-tab-1')
+              label.label(for='meeting-tab-1') Participants
+              .panel
+                div
+                  table.DetailsInfo
+                    tr
+                      th Meeting Host
+                      td #{meeting.hostDisplayName}
+                    tr
+                      th(rowspan= meeting.participants.items.length + 1)(style='width: 150px;') Participants
+                      - var x = 0
+                      for item in meeting.participants.items
+                        tr
+                          td
+                            | #{item.displayName}
+                            if item.coHost
+                              i(class='fa fa-check icon-yes', title='Cohost')
+                              a.Link(href=`/meetings/?removeParticipant=true&index=${x}`)
+                                button#removeParticipant.RowButton(style='float:right;') Remove Participant
+                              a.Link(href=`/meetings/?updateHost=true&index=${x}`)
+                                button#removeHost.RowButton(style='float:right;') Remove Co-Host
+                            else
+                              a.Link(href=`/meetings/?removeParticipant=true&index=${x}`)
+                                button#removeParticipant.RowButton(style='float:right;') Remove Participant
+                              a.Link(href=`/meetings/?updateHost=true&index=${x}`)
+                                button#elevateHost.RowButton(style='float:right;') Make Co-Host
+                            - x++
+                    tr
+                      td(colspan = 2)
+                        form(action=`/meetings` method='POST' autocomplete='off')
+                          input#newParticipant.InputBox(name='newParticipant', style='width: 450px; margin: 8px; float:left;', title='New Participant', placeholder='Enter Participant Email Address')
+                          button#addParticipant.RowButton(style='float:right;') Add Participant
+                    if error
+                      tr
+                        td(colspan = 2) #{error}
+              if tab == 2
+                input.input(name="meeting-tabs", type='radio', id='meeting-tab-2', checked)
+              else
+                input.input(name='meeting-tabs', type='radio', id='meeting-tab-2')
+              label.label(for='meeting-tab-2') Join Options
+              .panel
+                div
+                  table.DetailsInfo
+                    tr
+                      th(style='width: 350px;') Any User Can Be Co-Host
+                      if meeting.allowAnyUserToBeCoHost
+                        td
+                          a.link(href=`/meetings/?toggleMeetingOption=true&option=allowAnyUserToBeCoHost`)
+                            i(class='fa fa-toggle-on icon-yes fa-2x', title='enabled')
+                      if !meeting.allowAnyUserToBeCoHost
+                        td
+                          a.link(href=`/meetings/?toggleMeetingOption=true&option=allowAnyUserToBeCoHost`)
+                            i(class='fa fa-toggle-off icon-yes fa-2x', title='disabled')
+                    tr
+                      th Authenticated Devices
+                      td #{meeting.allowAuthenticatedDevices}
+                    tr
+                      th First User Be Co-Host
+                      td #{meeting.allowFirstUserToBeCoHost}
+                    tr
+                      th Automatic Lock
+                      td #{meeting.enableAutomaticLock}
+                    tr
+                      th Connect Audio Before Host
+                      td #{meeting.enableConnectAudioBeforeHost}
+                    tr
+                      th Join Before Host
+                      td #{meeting.enableJoinBeforeHost}
+        else
+          h1 Missing Required Role, Contact your Administrator
